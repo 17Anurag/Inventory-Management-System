@@ -1,0 +1,19 @@
+{
+  "scopes": [
+    {
+      "name": "$XSAPPNAME.InventoryAdmin",
+      "description": "InventoryAdmin"
+    }
+  ],
+  "attributes": [],
+  "role-templates": [
+    {
+      "name": "InventoryAdmin",
+      "description": "generated",
+      "scope-references": [
+        "$XSAPPNAME.InventoryAdmin"
+      ],
+      "attribute-references": []
+    }
+  ]
+}

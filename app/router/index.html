@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventory Tracker</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: #f5f6f7; min-height: 100vh; }
+        .header { background: #0a6ed1; color: white; padding: 20px 40px; display: flex; align-items: center; gap: 15px; }
+        .header h1 { font-size: 24px; font-weight: 300; }
+        .subtitle { background: #fff; padding: 15px 40px; border-bottom: 1px solid #ddd; color: #666; font-size: 14px; }
+        .container { padding: 40px; max-width: 1200px; margin: 0 auto; }
+        .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 24px; margin-bottom: 40px; }
+        .card { background: white; border-radius: 8px; padding: 25px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); cursor: pointer; border-left: 4px solid #0a6ed1; text-decoration: none; color: inherit; display: block; transition: all 0.2s; }
+        .card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.15); transform: translateY(-2px); }
+        .card-icon { font-size: 32px; margin-bottom: 12px; }
+        .card-title { font-size: 17px; font-weight: 600; color: #0a6ed1; margin-bottom: 6px; }
+        .card-desc { color: #666; font-size: 13px; }
+        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .section-header h2 { font-size: 18px; color: #333; }
+        .back-btn { background: #0a6ed1; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 13px; }
+        .back-btn:hover { background: #085caf; }
+        table { width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        th { background: #0a6ed1; color: white; padding: 12px 16px; text-align: left; font-size: 13px; }
+        td { padding: 12px 16px; border-bottom: 1px solid #f0f0f0; font-size: 13px; }
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background: #f8f9ff; }
+        .stock-low { color: #e74c3c; font-weight: 600; }
+        .stock-ok { color: #27ae60; font-weight: 600; }
+        .loading { text-align: center; padding: 40px; color: #666; }
+        .update-form { background: white; border-radius: 8px; padding: 25px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 25px; border-left: 4px solid #27ae60; }
+        .update-form h3 { font-size: 16px; color: #333; margin-bottom: 20px; }
+        .form-row { display: grid; grid-template-columns: 2fr 1fr 1fr 2fr auto; gap: 12px; align-items: end; }
+        .form-group { display: flex; flex-direction: column; gap: 6px; }
+        .form-group label { font-size: 12px; color: #666; font-weight: 600; }
+        .form-group select, .form-group input { padding: 9px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px; outline: none; }
+        .form-group select:focus, .form-group input:focus { border-color: #0a6ed1; }
+        .submit-btn { background: #27ae60; color: white; border: none; padding: 9px 20px; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: 600; white-space: nowrap; }
+        .submit-btn:hover { background: #219a52; }
+        .submit-btn:disabled { background: #aaa; cursor: not-allowed; }
+        .toast { position: fixed; bottom: 30px; right: 30px; padding: 14px 24px; border-radius: 6px; color: white; font-size: 14px; font-weight: 600; display: none; z-index: 999; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+        .toast.success { background: #27ae60; }
+        .toast.error { background: #e74c3c; }
+        .badge-in { background: #d5f5e3; color: #1e8449; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 700; }
+        .badge-out { background: #fde8e8; color: #c0392b; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 700; }
+        .history-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .record-count { background: #e8f0fb; color: #0a6ed1; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+        .refresh-btn { background: #f0f0f0; color: #333; border: none; padding: 7px 14px; border-radius: 4px; cursor: pointer; font-size: 12px; }
+        .refresh-btn:hover { background: #e0e0e0; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div style="font-size:28px">📦</div>
+        <h1>Inventory Tracker</h1>
+    </div>
+    <div class="subtitle">SAP BTP · CAP Java · HANA Cloud · Inventory Management System</div>
+
+    <div class="container">
+        <div id="home">
+            <p style="font-size:18px;font-weight:600;color:#333;margin-bottom:25px">Select a module to view data</p>
+            <div class="cards">
+                <a class="card" onclick="loadData('Products')" href="#">
+                    <div class="card-icon">🖥️</div>
+                    <div class="card-title">Products</div>
+                    <div class="card-desc">View inventory products, stock levels and update stock in real time.</div>
+                </a>
+                <a class="card" onclick="loadData('Suppliers')" href="#">
+                    <div class="card-icon">🏭</div>
+                    <div class="card-title">Suppliers</div>
+                    <div class="card-desc">View supplier information and contact details.</div>
+                </a>
+                <a class="card" onclick="loadData('StockMovements')" href="#">
+                    <div class="card-icon">📊</div>
+                    <div class="card-title">Stock Movement History</div>
+                    <div class="card-desc">Complete history of all stock IN/OUT movements with product names and timestamps.</div>
+                </a>
+            </div>
+        </div>
+
+        <div id="dataSection" style="display:none">
+            <div class="section-header">
+                <h2 id="dataTitle">Products</h2>
+                <button class="back-btn" onclick="goHome()">← Back to Home</button>
+            </div>
+
+            <!-- Stock Update Form (Products only) -->
+            <div id="stockForm" class="update-form" style="display:none">
+                <h3>⚡ Update Stock in Real Time</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>PRODUCT</label>
+                        <select id="productSelect">
+                            <option value="">Select a product...</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>TYPE</label>
+                        <select id="movementType">
+                            <option value="IN">IN (Add Stock)</option>
+                            <option value="OUT">OUT (Remove Stock)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>QUANTITY</label>
+                        <input type="number" id="quantity" min="1" value="1" placeholder="Qty">
+                    </div>
+                    <div class="form-group">
+                        <label>REMARKS</label>
+                        <input type="text" id="remarks" placeholder="e.g. New stock from supplier">
+                    </div>
+                    <button class="submit-btn" onclick="submitMovement()" id="submitBtn">Update Stock</button>
+                </div>
+            </div>
+
+            <div id="tableContainer"><div class="loading">Loading...</div></div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        const BASE = '/odata/v4/InventoryService';
+        let csrfToken = '';
+        let productsMap = {};
+
+        // Fetch CSRF token and products map on load
+        function init() {
+            fetch(BASE + '/Products', { headers: { 'X-CSRF-Token': 'Fetch' } })
+                .then(r => {
+                    csrfToken = r.headers.get('X-CSRF-Token') || '';
+                    return r.json();
+                })
+                .then(data => {
+                    (data.value || []).forEach(p => { productsMap[p.ID] = p.name; });
+                })
+                .catch(() => {});
+        }
+
+        init();
+
+        function loadData(entity) {
+            document.getElementById('home').style.display = 'none';
+            document.getElementById('dataSection').style.display = 'block';
+            document.getElementById('dataTitle').textContent = entity === 'StockMovements' ? 'Stock Movement History' : entity;
+            document.getElementById('stockForm').style.display = entity === 'Products' ? 'block' : 'none';
+            document.getElementById('tableContainer').innerHTML = '<div class="loading">⏳ Loading ' + entity + '...</div>';
+
+            const url = entity === 'StockMovements'
+                ? BASE + '/StockMovements?$orderby=createdAt desc'
+                : BASE + '/' + entity;
+
+            fetch(url)
+                .then(r => r.json())
+                .then(data => {
+                    if (entity === 'Products') populateProductDropdown(data.value || []);
+                    if (entity === 'StockMovements') renderMovementsHistory(data.value || []);
+                    else renderTable(entity, data.value);
+                })
+                .catch(err => {
+                    document.getElementById('tableContainer').innerHTML =
+                        '<div class="loading" style="color:red">❌ Error: ' + err.message + '</div>';
+                });
+        }
+
+        function populateProductDropdown(products) {
+            const sel = document.getElementById('productSelect');
+            sel.innerHTML = '<option value="">Select a product...</option>';
+            products.forEach(p => {
+                productsMap[p.ID] = p.name;
+                sel.innerHTML += '<option value="' + p.ID + '">' + p.name + ' (Stock: ' + p.stock + ')</option>';
+            });
+        }
+
+        function renderMovementsHistory(rows) {
+            if (!rows || rows.length === 0) {
+                document.getElementById('tableContainer').innerHTML =
+                    '<div class="loading">No stock movements found. Use the Products page to update stock.</div>';
+                return;
+            }
+
+            let html = '<div class="history-header">';
+            html += '<span class="record-count">' + rows.length + ' movement' + (rows.length !== 1 ? 's' : '') + ' found</span>';
+            html += '<button class="refresh-btn" onclick="loadData(\'StockMovements\')">🔄 Refresh</button>';
+            html += '</div>';
+
+            html += '<table><thead><tr>';
+            html += '<th>#</th><th>Date & Time</th><th>Product</th><th>Type</th><th>Quantity</th><th>Remarks</th>';
+            html += '</tr></thead><tbody>';
+
+            rows.forEach((row, idx) => {
+                const productName = productsMap[row.product_ID] || row.product_ID;
+                const typeClass = row.type === 'IN' ? 'badge-in' : 'badge-out';
+                const typeIcon = row.type === 'IN' ? '↑' : '↓';
+                const date = row.createdAt ? new Date(row.createdAt).toLocaleString() : '-';
+                const qty = row.type === 'IN'
+                    ? '<span style="color:#27ae60;font-weight:600">+' + row.quantity + '</span>'
+                    : '<span style="color:#e74c3c;font-weight:600">-' + row.quantity + '</span>';
+
+                html += '<tr>';
+                html += '<td style="color:#999">' + (idx + 1) + '</td>';
+                html += '<td>' + date + '</td>';
+                html += '<td><strong>' + productName + '</strong></td>';
+                html += '<td><span class="' + typeClass + '">' + typeIcon + ' ' + row.type + '</span></td>';
+                html += '<td>' + qty + '</td>';
+                html += '<td style="color:#666">' + (row.remarks || '-') + '</td>';
+                html += '</tr>';
+            });
+
+            html += '</tbody></table>';
+            document.getElementById('tableContainer').innerHTML = html;
+        }
+
+        function renderTable(entity, rows) {
+            const COLUMNS = {
+                Products: ['name', 'category', 'price', 'stock', 'unit'],
+                Suppliers: ['name', 'contactEmail', 'country']
+            };
+
+            if (!rows || rows.length === 0) {
+                document.getElementById('tableContainer').innerHTML = '<div class="loading">No data found.</div>';
+                return;
+            }
+            const cols = COLUMNS[entity];
+            let html = '<table><thead><tr>';
+            cols.forEach(c => { html += '<th>' + c.charAt(0).toUpperCase() + c.slice(1).replace(/_/g,' ') + '</th>'; });
+            html += '</tr></thead><tbody>';
+            rows.forEach(row => {
+                html += '<tr>';
+                cols.forEach(c => {
+                    let val = row[c] ?? '-';
+                    if (c === 'stock') val = '<span class="' + (val < 50 ? 'stock-low' : 'stock-ok') + '">' + val + '</span>';
+                    if (c === 'price') val = '₹' + Number(val).toLocaleString();
+                    html += '<td>' + val + '</td>';
+                });
+                html += '</tr>';
+            });
+            html += '</tbody></table>';
+            document.getElementById('tableContainer').innerHTML = html;
+        }
+
+        function submitMovement() {
+            const productId = document.getElementById('productSelect').value;
+            const type = document.getElementById('movementType').value;
+            const quantity = parseInt(document.getElementById('quantity').value);
+            const remarks = document.getElementById('remarks').value || type + ' movement via UI';
+
+            if (!productId) { showToast('Please select a product', 'error'); return; }
+            if (!quantity || quantity < 1) { showToast('Please enter a valid quantity', 'error'); return; }
+
+            const btn = document.getElementById('submitBtn');
+            btn.disabled = true;
+            btn.textContent = 'Updating...';
+
+            fetch(BASE + '/StockMovements', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrfToken },
+                body: JSON.stringify({ product_ID: productId, type: type, quantity: quantity, remarks: remarks })
+            })
+            .then(r => {
+                if (r.ok) {
+                    showToast('Stock updated successfully!', 'success');
+                    document.getElementById('quantity').value = 1;
+                    document.getElementById('remarks').value = '';
+                    init();
+                    loadData('Products');
+                } else {
+                    return r.json().then(e => { throw new Error(e.error?.message || 'Update failed'); });
+                }
+            })
+            .catch(err => { showToast('Error: ' + err.message, 'error'); })
+            .finally(() => { btn.disabled = false; btn.textContent = 'Update Stock'; });
+        }
+
+        function showToast(msg, type) {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.className = 'toast ' + type;
+            t.style.display = 'block';
+            setTimeout(() => t.style.display = 'none', 3500);
+        }
+
+        function goHome() {
+            document.getElementById('home').style.display = 'block';
+            document.getElementById('dataSection').style.display = 'none';
+        }
+    </script>
+</body>
+</html>
