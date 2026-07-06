@@ -1,3 +1,5 @@
+# Inventory Management System - SAP BTP CAP Java
+
 Inventory Management System built with SAP CAP Java, HANA Cloud, and XSUAA deployed on SAP BTP Cloud Foundry.
 
 ## 🌐 Live Demo
@@ -45,6 +47,8 @@ https://b9a4c56btrial-dev-inventory-tracker.cfapps.us10-001.hana.ondemand.com
 *Complete chronological history of all IN/OUT stock movements with product names, quantities and timestamps*
 
 ## 📁 Project Structure
+
+```
 inventory-tracker/
 │
 ├── app/                          # Frontend / Approuter
@@ -79,27 +83,31 @@ inventory-tracker/
 ├── package.json                  # Root npm config (CDS dependencies)
 ├── pom.xml                       # Root Maven POM
 └── .gitignore                    # Git ignore rules
+```
 
 ## 🏗️ Architecture
+
+```
 Browser
-│
-▼
+   │
+   ▼
 Approuter (inventory-tracker)          ← Handles login, CSRF, routing
-│
-├──/odata/v4/──────────────────────►  CAP Java Service (inventory-tracker-srv)
-│                                         │
-│                                         ├── InventoryService  (requires InventoryAdmin)
-│                                         │     ├── Products
-│                                         │     ├── Suppliers
-│                                         │     └── StockMovements
-│                                         │
-│                                         └── Custom Java Handler
-│                                               ├── Validate stock on OUT movement
-│                                               └── Auto-update product stock
-│
-└── XSUAA (inventory-tracker-auth)  ← OAuth2 / JWT token validation
-│
-└── HANA Cloud (inventory-tracker-db)  ← SAP HANA HDI Container
+   │
+   ├──/odata/v4/──────────────────────►  CAP Java Service (inventory-tracker-srv)
+   │                                         │
+   │                                         ├── InventoryService (requires InventoryAdmin)
+   │                                         │     ├── Products
+   │                                         │     ├── Suppliers
+   │                                         │     └── StockMovements
+   │                                         │
+   │                                         └── Custom Java Handler
+   │                                               ├── Validate stock on OUT movement
+   │                                               └── Auto-update product stock
+   │
+   └── XSUAA (inventory-tracker-auth)  ← OAuth2 / JWT token validation
+         │
+         └── HANA Cloud (inventory-tracker-db)  ← SAP HANA HDI Container
+```
 
 ## 🔐 Security
 
@@ -109,6 +117,8 @@ Approuter (inventory-tracker)          ← Handles login, CSRF, routing
 - Assign this role collection to users via BTP Cockpit → Security → Role Collections
 
 ## 📊 Data Model
+
+```
 Products
 ├── ID (UUID, key)
 ├── name (String)
@@ -118,18 +128,21 @@ Products
 ├── stock (Integer)
 ├── unit (String)
 └── supplier (Association to Suppliers)
+
 Suppliers
 ├── ID (UUID, key)
 ├── name (String)
 ├── contactEmail (String)
 ├── country (String)
 └── products (Association to many Products)
+
 StockMovements
 ├── ID (UUID, key)
 ├── product (Association to Products)
 ├── type (String: IN/OUT)
 ├── quantity (Integer)
 └── remarks (String)
+```
 
 ## ⚙️ Custom Java Handler (InventoryHandler.java)
 
@@ -148,6 +161,7 @@ The handler intercepts every `StockMovements` CREATE event and:
 - SAP CDS DK (`npm install -g @sap/cds-dk@^9`)
 
 ### Run locally
+
 ```bash
 # Clone the repo
 git clone https://github.com/17Anurag/Inventory-Management-System.git
@@ -164,6 +178,7 @@ http://localhost:8080
 ```
 
 ### Local test users (mock auth)
+
 | Username | Password | Role |
 |---|---|---|
 | admin | admin123 | InventoryAdmin |
@@ -178,6 +193,7 @@ http://localhost:8080
 - MTA Build Tool (`npm install -g mbt`)
 
 ### Deploy steps
+
 ```bash
 # Login to Cloud Foundry
 cf login -a https://api.cf.us10-001.hana.ondemand.com
@@ -193,6 +209,7 @@ cf apps
 ```
 
 ### BTP Services created on deployment
+
 | Service | Type | Purpose |
 |---|---|---|
 | inventory-tracker-auth | XSUAA application | Authentication |
@@ -213,8 +230,3 @@ Base URL: `https://b9a4c56btrial-dev-inventory-tracker-srv.cfapps.us10-001.hana.
 **Anurag** — [@17Anurag](https://github.com/17Anurag)
 
 Built as a learning project for SAP BTP / CAP Java development.
-EOF
-
-git add README.md
-git commit -m "Update README with screenshots"
-git push
