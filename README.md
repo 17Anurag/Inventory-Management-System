@@ -5,6 +5,10 @@ Inventory Management System built with SAP CAP Java, HANA Cloud, and XSUAA deplo
 ## 🌐 Live Demo
 https://b9a4c56btrial-dev-inventory-tracker.cfapps.us10-001.hana.ondemand.com
 
+> **Note:** This app is secured with SAP XSUAA authentication.
+> To request demo access, contact [@17Anurag](https://github.com/17Anurag).
+> Alternatively, clone the repo and run locally following the setup guide below.
+
 ## 🛠️ Tech Stack
 
 | Technology | Purpose |
